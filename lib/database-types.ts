@@ -4,6 +4,7 @@ export interface User {
   created_at: string;
   age: number;
   gender: string | null;
+  onboarding_status: 'basic-info' | 'user-reason' | 'addiction-info' | 'mental-health-info' | 'motivation' | 'lifestyle-factors' | 'support-preferences' | 'emergency-contact' | 'confirmation' | 'complete' | '';
   updated_at: string;
 }
 
@@ -21,7 +22,7 @@ export interface UserBasicInfo {
 export interface UserReason {
   id: string;
   user_id: string;
-  main_reason: 'stop_addiction' | 'mental_health_help' | 'no_reason' | null;
+  main_reason: string[];
   created_at: string;
   updated_at: string;
 }

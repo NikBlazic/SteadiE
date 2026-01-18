@@ -1,12 +1,26 @@
 import React, { createContext, useContext, useState } from 'react';
 import {
   User,
+  UserAddictionInfo,
   UserBasicInfo,
+  UserEmergencyContact,
+  UserLifestyleFactors,
+  UserMentalHealthInfo,
+  UserMotivation,
+  UserReason,
+  UserSupportPreferences,
 } from './database-types';
 
 interface OnboardingData {
   user?: Partial<User>;
   basicInfo?: Partial<UserBasicInfo>;
+  userReason?: Partial<UserReason>;
+  addictionInfo?: Partial<UserAddictionInfo>;
+  mentalHealthInfo?: Partial<UserMentalHealthInfo>;
+  motivation?: Partial<UserMotivation>;
+  lifestyleFactors?: Partial<UserLifestyleFactors>;
+  supportPreferences?: Partial<UserSupportPreferences>;
+  emergencyContact?: Partial<UserEmergencyContact>;
 }
 
 interface OnboardingContextType {

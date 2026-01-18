@@ -11,6 +11,13 @@ export default function OnboardingLayout() {
         }}
       >
         <Stack.Screen name="basic-info" />
+        <Stack.Screen name="user-reason" />
+        <Stack.Screen name="addiction-info" />
+        <Stack.Screen name="mental-health-info" />
+        <Stack.Screen name="motivation" />
+        <Stack.Screen name="lifestyle-factors" />
+        <Stack.Screen name="support-preferences" />
+        <Stack.Screen name="emergency-contact" />
         <Stack.Screen name="confirmation" />
       </Stack>
     </OnboardingProvider>

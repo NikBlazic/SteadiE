@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   ScrollView,
@@ -8,12 +8,16 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { DatabaseService } from '../../api/onboarding-data';
+import { useAuth } from '../../lib/auth-context';
 import { useOnboarding } from '../../lib/onboarding-context';
 
 export default function BasicInfoScreen() {
   const router = useRouter();
-  const { updateData } = useOnboarding();
+  const { data, updateData } = useOnboarding();
+  const { user } = useAuth();
 
+  // Initialize form data from context if available
   const [formData, setFormData] = useState({
     display_name: '',
     age: '',
@@ -22,6 +26,77 @@ export default function BasicInfoScreen() {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load data from database and context when component mounts
+  useEffect(() => {
+    const loadData = async () => {
+      if (!user || isInitialized) return;
+
+      setIsLoading(true);
+      try {
+        // Try to load from database first
+        const [basicInfoData, userData] = await Promise.all([
+          DatabaseService.getUserBasicInfo(user.id),
+          DatabaseService.getUserData(user.id),
+        ]);
+
+        // Use database data if available, otherwise fall back to context
+        const displayName = basicInfoData?.display_name || data.basicInfo?.display_name || '';
+        const countryRegion = basicInfoData?.country_region || data.basicInfo?.country_region || '';
+        const age = userData?.age?.toString() || data.user?.age?.toString() || '';
+        const gender = (userData?.gender || data.user?.gender || '') as '' | 'male' | 'female' | 'prefer_not_to_say';
+
+        setFormData({
+          display_name: displayName,
+          age: age,
+          gender: gender,
+          country_region: countryRegion,
+        });
+
+        // Update context with loaded data
+        if (basicInfoData || userData) {
+          if (basicInfoData) {
+            updateData('basicInfo', {
+              display_name: basicInfoData.display_name,
+              country_region: basicInfoData.country_region,
+            });
+          }
+          if (userData) {
+            updateData('user', {
+              age: userData.age,
+              gender: userData.gender,
+            });
+          }
+        } else {
+          // Fall back to context data if no database data
+          setFormData({
+            display_name: data.basicInfo?.display_name || '',
+            age: data.user?.age?.toString() || '',
+            gender: (data.user?.gender as '' | 'male' | 'female' | 'prefer_not_to_say') || '',
+            country_region: data.basicInfo?.country_region || '',
+          });
+        }
+
+        setIsInitialized(true);
+      } catch (error) {
+        console.error('Error loading data:', error);
+        // Fall back to context data on error
+        setFormData({
+          display_name: data.basicInfo?.display_name || '',
+          age: data.user?.age?.toString() || '',
+          gender: (data.user?.gender as '' | 'male' | 'female' | 'prefer_not_to_say') || '',
+          country_region: data.basicInfo?.country_region || '',
+        });
+        setIsInitialized(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [user, isInitialized, data, updateData]);
 
   const formatGenderDisplay = (gender: string) => {
     switch (gender) {
@@ -60,7 +135,7 @@ export default function BasicInfoScreen() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (validateForm()) {
       // Update the onboarding context with user data (age, gender)
       updateData('user', {
@@ -74,7 +149,20 @@ export default function BasicInfoScreen() {
         country_region: formData.country_region.trim(),
       });
 
-      router.push('/onboarding/confirmation' as any);
+      // Update onboarding status before navigating
+      if (user) {
+        try {
+          await DatabaseService.updateOnboardingStatus(user.id, 'user-reason');
+          // Use replace instead of push to avoid navigation issues
+          router.replace('/onboarding/user-reason' as any);
+        } catch (error) {
+          console.error('Error updating onboarding status:', error);
+          // Still navigate even if status update fails
+          router.replace('/onboarding/user-reason' as any);
+        }
+      } else {
+        router.replace('/onboarding/user-reason' as any);
+      }
     }
   };
 
@@ -84,14 +172,33 @@ export default function BasicInfoScreen() {
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
+
+    // Update context in real-time as user types
+    if (field === 'display_name' || field === 'country_region') {
+      updateData('basicInfo', {
+        [field]: value,
+      });
+    } else if (field === 'age') {
+      // Store the raw string value, but also update context with parsed number if valid
+      const ageNum = parseInt(value);
+      if (!isNaN(ageNum) && value.trim() !== '') {
+        updateData('user', {
+          age: ageNum,
+        });
+      }
+    } else if (field === 'gender') {
+      updateData('user', {
+        gender: value,
+      });
+    }
   };
 
   return (
     <ScrollView className="flex-1 bg-white">
       <View className="flex-1 px-6 pt-32">
         {/* Header */}
-        <View className="mb-8">
-          <Text className="text-3xl font-bold text-gray-900 mb-2">
+        <View className="mb-6">
+          <Text className="text-3xl font-bold text-gray-900 mb-3">
             Welcome to SteadiE
           </Text>
           <Text className="text-lg text-gray-600">
@@ -100,9 +207,9 @@ export default function BasicInfoScreen() {
         </View>
 
         {/* Form */}
-        <View className="space-y-6">
+        <View className="space-y-2">
           {/* Username */}
-          <View>
+          <View className="mb-2 mt-2">
             <Text className="text-base font-semibold text-gray-900 mb-2">
               Username
             </Text>
@@ -123,7 +230,7 @@ export default function BasicInfoScreen() {
           </View>
 
           {/* Age */}
-          <View>
+          <View className="mb-2 mt-2">
             <Text className="text-base font-semibold text-gray-900 mb-2">
               Age *
             </Text>
@@ -145,7 +252,7 @@ export default function BasicInfoScreen() {
           </View>
 
           {/* Gender */}
-          <View>
+          <View className="mb-2 mt-2">
             <Text className="text-base font-semibold text-gray-900 mb-2">
               Gender *
             </Text>
@@ -178,7 +285,7 @@ export default function BasicInfoScreen() {
           </View>
 
           {/* Country */}
-          <View>
+          <View className="mb-2 mt-2">
             <Text className="text-base font-semibold text-gray-900 mb-2">
               Country *
             </Text>
@@ -200,13 +307,14 @@ export default function BasicInfoScreen() {
         </View>
 
         {/* Continue Button */}
-        <View className="mt-8 mb-8">
+        <View className="mt-6 mb-8">
           <TouchableOpacity
             className="bg-[#008d72] rounded-lg py-4 px-6"
             onPress={handleContinue}
+            disabled={isLoading}
           >
             <Text className="text-white text-center font-semibold text-lg">
-              Continue
+              {isLoading ? 'Loading...' : 'Continue'}
             </Text>
           </TouchableOpacity>
         </View>
