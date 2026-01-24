@@ -1,14 +1,36 @@
 import { useState } from 'react';
-import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import "../../global.css";
 import { useAuth } from '../../lib/auth-context';
 
 export default function HomeScreen() {
-  const { user } = useAuth();
+  const { user, signIn, signUp } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [selectedDate, setSelectedDate] = useState(21);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleAuth = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please enter both email and password');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      if (isSignUp) {
+        await signUp(email, password);
+        Alert.alert('Success', 'Account created successfully!');
+      } else {
+        await signIn(email, password);
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Authentication failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Show homepage design when user is logged in
   if (user) {
@@ -23,7 +45,7 @@ export default function HomeScreen() {
 
   // Show login form when user is not logged in
   return (
-    <View className="flex-1 items-center justify-center p-4">
+    <View className="flex-1 items-center justify-center p-4 bg-white">
       <Image
         source={require('../../assets/images/logo-noBackground.png')}
         className="w-48 h-48 mb-6"
@@ -47,9 +69,13 @@ export default function HomeScreen() {
         secureTextEntry
       />
 
-      <TouchableOpacity className="w-full bg-[#008d72] px-6 py-3 rounded-lg mb-4">
+      <TouchableOpacity 
+        className="w-full bg-[#008d72] px-6 py-3 rounded-lg mb-4"
+        onPress={handleAuth}
+        disabled={isLoading}
+      >
         <Text className="text-white font-semibold text-center">
-          {isSignUp ? 'Sign Up' : 'Sign In'}
+          {isLoading ? 'Loading...' : (isSignUp ? 'Sign Up' : 'Sign In')}
         </Text> 
       </TouchableOpacity>
 
