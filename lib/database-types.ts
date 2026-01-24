@@ -113,3 +113,12 @@ export interface ApiError {
   success: false;
   message: string;
 }
+
+export interface empty_page {
+  id: string;
+  user_id: string;
+  title: string | null;
+  content: string | null;
+  created_at: string;
+  updated_at: string;
+}
