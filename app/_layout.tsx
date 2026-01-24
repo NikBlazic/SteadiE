@@ -18,9 +18,18 @@ export default function RootLayout() {
     <AuthProvider>
       <OnboardingGuard>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+            }}>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+            <Stack.Screen 
+              name="journaling" 
+              options={{ 
+                headerShown: false,
+              }} 
+            />
           </Stack>
           <StatusBar style="auto" />
         </ThemeProvider>

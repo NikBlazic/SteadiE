@@ -2,8 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
+import { useAuth } from '../../lib/auth-context';
 
 export default function TabLayout() {
+  const { user, loading } = useAuth();
+  const showTabBar = !loading && !!user;
+
   return (
     <Tabs
       screenOptions={{
@@ -11,6 +15,7 @@ export default function TabLayout() {
         tabBarActiveTintColor: '#008d72',
         tabBarInactiveTintColor: '#008d72',
         tabBarStyle: {
+          display: showTabBar ? 'flex' : 'none',
           backgroundColor: '#FFFFFF',
           borderTopWidth: 1,
           borderTopColor: '#E5E7EB',
