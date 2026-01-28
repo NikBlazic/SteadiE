@@ -4,7 +4,8 @@ import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Pressable, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import BackButton from '../../components/BackButton';
+import BackButton from '../../components/back-button';
+import SuccessPopup from '../../components/succesful-mood-check-in';
 import '../../global.css';
 
 type MoodLevel = 1 | 2 | 3 | 4 | 5;
@@ -79,6 +80,7 @@ const MoodButton: React.FC<MoodButtonProps> = ({ level, isSelected, onPress }) =
 
 export const MoodSelector: React.FC = () => {
   const [selectedMood, setSelectedMood] = useState<MoodLevel | null>(null);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const { user } = useAuth();
 
   const handleSubmitMood = async (mood: MoodLevel) => {
@@ -99,29 +101,43 @@ export const MoodSelector: React.FC = () => {
         throw error;
       }
 
-      // Redirect to home page after successful save
-      router.replace('/(tabs)' as any);
+      // Show success popup
+      setShowSuccessPopup(true);
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to save entry');
     }
+  };
+
+  const handlePopupClose = () => {
+    setShowSuccessPopup(false);
+    // Redirect to home page after popup closes
+    router.replace('/(tabs)' as any);
   };
 
   // Moods: 1=Very Sad, 2=Sad, 3=Neutral, 4=Happy, 5=Very Happy
   const moods: MoodLevel[] = [1, 2, 3, 4, 5];
 
   return (
-    <View className="flex-row gap-5 justify-center items-center">
-      {moods.map((level) => (
-        <MoodButton
-          key={level}
-          level={level}
-          isSelected={selectedMood === level}
-          onPress={() => {
-            setSelectedMood(level);
-            handleSubmitMood(level);
-          }}
-        />
-      ))}
-    </View>
+    <>
+      <View className="flex-row gap-5 justify-center items-center">
+        {moods.map((level) => (
+          <MoodButton
+            key={level}
+            level={level}
+            isSelected={selectedMood === level}
+            onPress={() => {
+              setSelectedMood(level);
+              handleSubmitMood(level);
+            }}
+          />
+        ))}
+      </View>
+      <SuccessPopup
+        visible={showSuccessPopup}
+        message="Mood check-in saved successfully!"
+        onClose={handlePopupClose}
+        duration={2000}
+      />
+    </>
   );
 };

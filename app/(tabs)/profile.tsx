@@ -1,3 +1,5 @@
+'use client';
+
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
@@ -121,148 +123,143 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-gray-50" showsVerticalScrollIndicator={false}>
-      {/* Profile Header */}
-      <View className="bg-white pb-8 pt-16 px-6">
-        <View className="items-center">
-          <View className="w-28 h-28 rounded-full bg-emerald-500 items-center justify-center mb-4 shadow-lg">
-            <Text className="text-4xl font-bold text-white">{initials}</Text>
+    <View className="flex-1 bg-white">
+      {/* Header */}
+      <View style={{ backgroundColor: '#008d72' }} className="pt-16 pb-8 px-6">
+        <Text className="text-white text-3xl font-bold">{displayName}</Text>
+        {profileData?.country && (
+          <Text className="text-white/80 text-base mt-1">{profileData.country}</Text>
+        )}
+      </View>
+
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        {!hasData ? (
+          <View className="items-center justify-center py-16 px-6">
+            <Text className="text-gray-500 text-center text-base">
+              No profile information available yet. Complete onboarding to see your profile details.
+            </Text>
           </View>
-          <Text className="text-2xl font-bold text-gray-900 mb-1">
-            {displayName}
-          </Text>
-          {profileData?.country && (
-            <Text className="text-gray-500 text-base">{profileData.country}</Text>
-          )}
-        </View>
-      </View>
-
-      {!hasData ? (
-        <View className="items-center justify-center py-16 px-6">
-          <Text className="text-gray-600 text-center text-base">
-            No profile information available yet. Complete onboarding to see your profile
-            details.
-          </Text>
-        </View>
-      ) : (
-        <View className="px-6 py-6">
-          {/* Basic Information */}
-          {(profileData?.age || profileData?.gender) && (
-            <View className="bg-white rounded-2xl p-5 shadow-sm mb-6">
-              <Text className="text-lg font-bold text-gray-900 mb-4">Basic Information</Text>
-              <View>
-                {profileData.age && (
-                  <View className="flex-row justify-between items-center pb-3 border-b border-gray-100 mb-3">
-                    <Text className="text-gray-600 text-base">Age</Text>
-                    <Text className="text-gray-900 font-semibold text-base">
-                      {profileData.age}
-                    </Text>
-                  </View>
-                )}
-                {profileData.gender && (
-                  <View className="flex-row justify-between items-center">
-                    <Text className="text-gray-600 text-base">Gender</Text>
-                    <Text className="text-gray-900 font-semibold text-base capitalize">
-                      {profileData.gender}
-                    </Text>
-                  </View>
-                )}
+        ) : (
+          <View className="px-5 py-6">
+            {/* Basic Information */}
+            {(profileData?.age || profileData?.gender) && (
+              <View className="mb-6">
+                <Text style={{ color: '#008d72' }} className="text-sm font-semibold uppercase tracking-wide mb-3">
+                  Basic Information
+                </Text>
+                <View className="bg-gray-50 rounded-2xl overflow-hidden">
+                  {profileData.age && (
+                    <View className="flex-row justify-between items-center px-4 py-4 border-b border-gray-100">
+                      <Text className="text-gray-500 text-base">Age</Text>
+                      <Text className="text-gray-900 font-medium text-base">
+                        {profileData.age}
+                      </Text>
+                    </View>
+                  )}
+                  {profileData.gender && (
+                    <View className="flex-row justify-between items-center px-4 py-4">
+                      <Text className="text-gray-500 text-base">Gender</Text>
+                      <Text className="text-gray-900 font-medium text-base capitalize">
+                        {profileData.gender}
+                      </Text>
+                    </View>
+                  )}
+                </View>
               </View>
-            </View>
-          )}
+            )}
 
-          {/* Addiction Information */}
-          {(profileData?.addictionType ||
-            profileData?.severity ||
-            profileData?.frequency ||
-            profileData?.goal) && (
-            <View className="bg-white rounded-2xl p-5 shadow-sm mb-6">
-              <Text className="text-lg font-bold text-gray-900 mb-4">Addiction Information</Text>
-              <View>
-                {profileData.addictionType && (
-                  <View className="flex-row justify-between items-center pb-3 border-b border-gray-100 mb-3">
-                    <Text className="text-gray-600 text-base">Type</Text>
-                    <Text className="text-gray-900 font-semibold text-base">
-                      {profileData.addictionType}
-                    </Text>
-                  </View>
-                )}
-                {profileData.severity && (
-                  <View className="flex-row justify-between items-center pb-3 border-b border-gray-100 mb-3">
-                    <Text className="text-gray-600 text-base">Severity</Text>
-                    <Text className="text-gray-900 font-semibold text-base">
-                      {formatValue(profileData.severity)}
-                    </Text>
-                  </View>
-                )}
-                {profileData.frequency && (
-                  <View className="flex-row justify-between items-center pb-3 border-b border-gray-100 mb-3">
-                    <Text className="text-gray-600 text-base">Frequency</Text>
-                    <Text className="text-gray-900 font-semibold text-base">
-                      {formatValue(profileData.frequency)}
-                    </Text>
-                  </View>
-                )}
-                {profileData.goal && (
-                  <View className="flex-row justify-between items-start">
-                    <Text className="text-gray-600 text-base" style={{ flex: 1, marginRight: 16 }}>Goal</Text>
-                    <Text className="text-gray-900 font-semibold text-base" style={{ flex: 1, textAlign: 'right' }}>
-                      {profileData.goal}
-                    </Text>
-                  </View>
-                )}
+            {/* Addiction Information */}
+            {(profileData?.addictionType ||
+              profileData?.severity ||
+              profileData?.frequency ||
+              profileData?.goal) && (
+              <View className="mb-6">
+                <Text style={{ color: '#008d72' }} className="text-sm font-semibold uppercase tracking-wide mb-3">
+                  Addiction Information
+                </Text>
+                <View className="bg-gray-50 rounded-2xl overflow-hidden">
+                  {profileData.addictionType && (
+                    <View className="flex-row justify-between items-center px-4 py-4 border-b border-gray-100">
+                      <Text className="text-gray-500 text-base">Type</Text>
+                      <Text className="text-gray-900 font-medium text-base">
+                        {profileData.addictionType}
+                      </Text>
+                    </View>
+                  )}
+                  {profileData.severity && (
+                    <View className="flex-row justify-between items-center px-4 py-4 border-b border-gray-100">
+                      <Text className="text-gray-500 text-base">Severity</Text>
+                      <Text className="text-gray-900 font-medium text-base">
+                        {formatValue(profileData.severity)}
+                      </Text>
+                    </View>
+                  )}
+                  {profileData.frequency && (
+                    <View className="flex-row justify-between items-center px-4 py-4 border-b border-gray-100">
+                      <Text className="text-gray-500 text-base">Frequency</Text>
+                      <Text className="text-gray-900 font-medium text-base">
+                        {formatValue(profileData.frequency)}
+                      </Text>
+                    </View>
+                  )}
+                  {profileData.goal && (
+                    <View className="flex-row justify-between items-center px-4 py-4">
+                      <Text className="text-gray-500 text-base">Goal</Text>
+                      <Text className="text-gray-900 font-medium text-base text-right" style={{ flex: 1, marginLeft: 16 }}>
+                        {profileData.goal}
+                      </Text>
+                    </View>
+                  )}
+                </View>
               </View>
-            </View>
-          )}
+            )}
 
-          {/* Mental Health & Motivation */}
-          {(profileData?.recentFeeling || profileData?.readiness) && (
-            <View className="bg-white rounded-2xl p-5 shadow-sm">
-              <Text className="text-lg font-bold text-gray-900 mb-4">
-                Mental Health & Motivation
-              </Text>
-              <View>
-                {profileData.recentFeeling && (
-                  <View className="flex-row justify-between items-center pb-3 border-b border-gray-100 mb-3">
-                    <Text className="text-gray-600 text-base">Recent Feeling</Text>
-                    <Text className="text-gray-900 font-semibold text-base">
-                      {formatValue(profileData.recentFeeling)}
-                    </Text>
-                  </View>
-                )}
-                {profileData.readiness && (
-                  <View className="flex-row justify-between items-center">
-                    <Text className="text-gray-600 text-base">Readiness</Text>
-                    <Text className="text-gray-900 font-semibold text-base">
-                      {formatValue(profileData.readiness)}
-                    </Text>
-                  </View>
-                )}
+            {/* Mental Health & Motivation */}
+            {(profileData?.recentFeeling || profileData?.readiness) && (
+              <View className="mb-6">
+                <Text style={{ color: '#008d72' }} className="text-sm font-semibold uppercase tracking-wide mb-3">
+                  Mental Health & Motivation
+                </Text>
+                <View className="bg-gray-50 rounded-2xl overflow-hidden">
+                  {profileData.recentFeeling && (
+                    <View className="flex-row justify-between items-center px-4 py-4 border-b border-gray-100">
+                      <Text className="text-gray-500 text-base">Recent Feeling</Text>
+                      <Text className="text-gray-900 font-medium text-base">
+                        {formatValue(profileData.recentFeeling)}
+                      </Text>
+                    </View>
+                  )}
+                  {profileData.readiness && (
+                    <View className="flex-row justify-between items-center px-4 py-4">
+                      <Text className="text-gray-500 text-base">Readiness</Text>
+                      <Text className="text-gray-900 font-medium text-base">
+                        {formatValue(profileData.readiness)}
+                      </Text>
+                    </View>
+                  )}
+                </View>
               </View>
-            </View>
-          )}
-        </View>
-      )}
+            )}
 
-      {/* Bottom actions */}
-      <View className="px-6 pt-2 pb-10 flex-row">
-        <TouchableOpacity
-          className="flex-1 bg-red-500 rounded-xl py-3 items-center justify-center mr-3"
-          onPress={handleLogout}
-        >
-          <Text className="text-white font-semibold text-base">Log out</Text>
-        </TouchableOpacity>
+            {/* Settings Button */}
+            <TouchableOpacity
+              className="rounded-2xl py-4 items-center justify-center mb-3"
+              style={{ backgroundColor: '#008d72' }}
+              onPress={handleSettingsPress}
+            >
+              <Text className="text-white font-semibold text-base">Settings</Text>
+            </TouchableOpacity>
 
-        <TouchableOpacity
-          className="flex-1 rounded-xl py-3 items-center justify-center border"
-          style={{ borderColor: '#008d72' }}
-          onPress={handleSettingsPress}
-        >
-          <Text className="font-semibold text-base" style={{ color: '#008d72' }}>
-            Settings
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+            {/* Log out Button */}
+            <TouchableOpacity
+              className="py-4 items-center justify-center"
+              onPress={handleLogout}
+            >
+              <Text className="text-gray-400 font-medium text-base">Log out</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </ScrollView>
+    </View>
   );
 }
