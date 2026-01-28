@@ -1,0 +1,1 @@
+alter table mood_check_in drop column note;
