@@ -35,7 +35,7 @@ export default function EmptyPageScreen() {
 
     setIsSaving(true);
     try {
-      const { error } = await supabase
+      const { error: emptyPageError } = await supabase
         .from('empty_page')
         .insert({
           user_id: user.id,
@@ -43,8 +43,20 @@ export default function EmptyPageScreen() {
           content: content.trim() || null,
         });
 
-      if (error) {
-        throw error;
+      if (emptyPageError) {
+        throw emptyPageError;
+      }
+
+      // Also insert into check_ins table
+      const { error: checkInError } = await supabase
+        .from('check_ins')
+        .insert({
+          user_id: user.id,
+          completed: 'empty-page',
+        });
+
+      if (checkInError) {
+        throw checkInError;
       }
 
       // Redirect to home page after successful save

@@ -41,7 +41,7 @@ export default function TabLayout() {
         },
       }}>
       <Tabs.Screen
-        name="index"
+        name="homepage"
         options={{
           title: 'Home',
           tabBarLabel: '',
@@ -106,6 +106,12 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <Ionicons name="person" size={20} color={color} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="index"
+        options={{
+          href: null, // Hide from tab bar
         }}
       />
     </Tabs>

@@ -1,0 +1,1 @@
+alter table check_ins add column completed text not null;

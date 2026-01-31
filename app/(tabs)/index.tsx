@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import "../../global.css";
 import { useAuth } from '../../lib/auth-context';
@@ -33,15 +34,11 @@ export default function HomeScreen() {
   };
 
   // Show homepage design when user is logged in
-  if (user) {
-
-
-    return (
-      <View className="flex-1 bg-white items-center justify-center align-middle">
-        <Text className="text-3xl font-bold text-[#008d72]">hello.</Text>
-      </View>
-    );
-  }
+  useEffect(() => {
+    if (user) {
+      router.replace('/(tabs)/homepage');
+    }
+  }, [user]);
 
   // Show login form when user is not logged in
   return (

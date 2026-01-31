@@ -90,15 +90,27 @@ export const MoodSelector: React.FC = () => {
     }
 
     try {
-      const { error } = await supabase
+      const { error: moodCheckInError } = await supabase
         .from('mood_check_in')
         .insert({
           user_id: user.id,
           mood: mood,
         });
 
-      if (error) {
-        throw error;
+      if (moodCheckInError) {
+        throw moodCheckInError;
+      }
+
+      // Also insert into check_ins table
+      const { error: checkInError } = await supabase
+        .from('check_ins')
+        .insert({
+          user_id: user.id,
+          completed: 'mood-check-in',
+        });
+
+      if (checkInError) {
+        throw checkInError;
       }
 
       // Show success popup

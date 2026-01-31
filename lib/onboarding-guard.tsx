@@ -73,7 +73,7 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
     // If user has completed onboarding, redirect to main app if in onboarding flow
     if (onboardingStatus === 'complete') {
       if (inOnboardingFlow) {
-        router.replace('/(tabs)');
+        router.replace('/(tabs)/homepage');
       }
       return;
     }
