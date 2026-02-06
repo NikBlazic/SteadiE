@@ -130,6 +130,7 @@ export class DatabaseService {
   static async saveUserData(userId: string, userData: {
     age: number;
     gender: string;
+    email: string;
   }) {
     // Check if record exists
     const { data: existing, error: selectError } = await supabase
@@ -148,6 +149,7 @@ export class DatabaseService {
         .update({
           age: userData.age,
           gender: userData.gender,
+          email: userData.email,
         })
         .eq('id', userId);
 
@@ -162,6 +164,7 @@ export class DatabaseService {
           id: userId,
           age: userData.age,
           gender: userData.gender,
+          email: userData.email,
         });
 
       if (error) {

@@ -100,7 +100,7 @@ export default function ProfileScreen() {
     profileData?.country ||
     profileData?.addictionType;
 
-  const displayName = profileData?.username || 'User';
+  const displayName = profileData?.username || 'Anonymous';
   const initials = displayName
     .split(' ')
     .map((n) => n[0])
@@ -126,9 +126,9 @@ export default function ProfileScreen() {
     <View className="flex-1 bg-white">
       {/* Header */}
       <View style={{ backgroundColor: '#008d72' }} className="pt-16 pb-8 px-6">
-        <Text className="text-white text-3xl font-bold">{displayName}</Text>
+        <Text className="text-white text-5xl font-bold">{displayName}</Text>
         {profileData?.country && (
-          <Text className="text-white/80 text-base mt-1">{profileData.country}</Text>
+          <Text className="text-white/80 text-xl mt-1">{profileData.country}</Text>
         )}
       </View>
 

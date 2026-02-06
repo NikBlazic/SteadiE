@@ -1,9 +1,10 @@
 'use client';
 
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ScrollView,
   Text,
@@ -15,10 +16,8 @@ import { supabase } from '../../lib/supabase';
 
 const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-const quote = {
-  text: "Recovery is not a race. You don't have to feel guilty if it takes you longer than you thought it would.",
-  author: "Unknown"
-};
+const QUOTE_STORAGE_KEY = 'daily_quote';
+const QUOTE_DATE_KEY = 'daily_quote_date';
 
 export default function HomeScreen() {
   const { user } = useAuth();
@@ -26,6 +25,11 @@ export default function HomeScreen() {
   const [streak, setStreak] = useState<number>(0);
   const [checkIns, setCheckIns] = useState<number>(0);
   const [avgMood, setAvgMood] = useState<string>('—');
+  const [displayName, setDisplayName] = useState<string>('');
+  const [quote, setQuote] = useState<{ text: string; author: string }>({
+    text: "",
+    author: ""
+  });
   const today = new Date();
   const currentDayIndex = today.getDay() === 0 ? 6 : today.getDay() - 1;
 
@@ -36,6 +40,85 @@ export default function HomeScreen() {
     if (mood >= 1.5) return 'Sad';
     return 'Very Sad';
   };
+
+  const getTodayDateString = (): string => {
+    const today = new Date();
+    return `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+  };
+
+  const fetchRandomQuote = useCallback(async () => {
+    try {
+      // Get all quotes from the database
+      const { data: quotes, error } = await supabase
+        .from('quotes')
+        .select('quote, author');
+
+      if (error) {
+        console.error('Error fetching quotes:', error);
+        return;
+      }
+
+      if (quotes && quotes.length > 0) {
+        // Select a random quote
+        const randomIndex = Math.floor(Math.random() * quotes.length);
+        const randomQuote = {
+          text: quotes[randomIndex].quote,
+          author: quotes[randomIndex].author || 'Unknown'
+        };
+
+        // Store the quote and today's date
+        await AsyncStorage.setItem(QUOTE_STORAGE_KEY, JSON.stringify(randomQuote));
+        await AsyncStorage.setItem(QUOTE_DATE_KEY, getTodayDateString());
+        
+        setQuote(randomQuote);
+      }
+    } catch (error) {
+      console.error('Error fetching random quote:', error);
+    }
+  }, []);
+
+  const loadDailyQuote = useCallback(async () => {
+    try {
+      const storedDate = await AsyncStorage.getItem(QUOTE_DATE_KEY);
+      const todayDateString = getTodayDateString();
+
+      // If no stored date or it's a different day, fetch a new quote
+      if (!storedDate || storedDate !== todayDateString) {
+        await fetchRandomQuote();
+      } else {
+        // Load the stored quote for today
+        const storedQuote = await AsyncStorage.getItem(QUOTE_STORAGE_KEY);
+        if (storedQuote) {
+          setQuote(JSON.parse(storedQuote));
+        } else {
+          // Fallback: fetch a new quote if stored quote is missing
+          await fetchRandomQuote();
+        }
+      }
+    } catch (error) {
+      console.error('Error loading daily quote:', error);
+      // Fallback: try to fetch a new quote
+      await fetchRandomQuote();
+    }
+  }, [fetchRandomQuote]);
+
+  useEffect(() => {
+    if (user) {
+      const fetchUserProfile = async () => {
+        const { data: userProfile, error: userProfileError } = await supabase
+          .from('user_basic_info')
+          .select('display_name')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (!userProfileError && userProfile) {
+          setDisplayName(userProfile.display_name || 'Anonymous');
+        }
+      };
+      fetchUserProfile();
+      loadDailyQuote();
+    }
+  }, [user, loadDailyQuote]);
 
   const calculateStreak = (checkInDates: Date[]): number => {
     if (checkInDates.length === 0) return 0;
@@ -162,11 +245,12 @@ export default function HomeScreen() {
     }
   }, [user]);
 
-  // Refresh stats when screen comes into focus
+  // Refresh stats and quote when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       fetchStats();
-    }, [fetchStats])
+      loadDailyQuote();
+    }, [fetchStats, loadDailyQuote])
   );
 
   const getWeekDates = () => {
@@ -191,7 +275,7 @@ export default function HomeScreen() {
       return 'Good afternoon,';
     } else  {
       return 'Good evening,';
-    } 
+    }
   };
 
   const weekDates = getWeekDates();
@@ -206,9 +290,8 @@ export default function HomeScreen() {
       <View className="px-5 pt-16">
         {/* Header */}
         <View className="mb-6">
-          <Text className="text-base text-gray-500">{getGreeting()}</Text>
-          <Text className="text-3xl font-bold text-gray-800 mt-1">Nick</Text>
-          <Text className="text-sm text-gray-400 mt-1">{formattedDate}</Text>
+          <Text className="text-xl text-gray-500">{getGreeting()}</Text>
+          <Text className="text-5xl font-bold text-gray-800 mt-1">{displayName}</Text>
         </View>
 
         {/* Week Calendar */}

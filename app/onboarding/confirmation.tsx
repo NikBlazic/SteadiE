@@ -247,6 +247,7 @@ export default function ConfirmationScreen() {
       await DatabaseService.saveUserData(user.id, {
         age: data.user.age!,
         gender: data.user.gender || 'prefer_not_to_say',
+        email: user.email || '',
       });
 
       // Save basic info (display_name, country_region) - these are required, so we know they exist

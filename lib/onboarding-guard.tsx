@@ -85,9 +85,29 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
       const expectedScreen = onboardingStatus || 'basic-info';
       const isOnExpectedScreen = inOnboardingFlow && currentScreen === expectedScreen;
 
-      // Only redirect if user is not on the expected screen
+      // Define the order of onboarding screens to detect forward progress
+      const screenOrder: Record<string, number> = {
+        'basic-info': 0,
+        'user-reason': 1,
+        'addiction-info': 2,
+        'mental-health-info': 3,
+        'motivation': 4,
+        'lifestyle-factors': 5,
+        'support-preferences': 6,
+        'emergency-contact': 7,
+        'confirmation': 8,
+      };
+
+      const currentScreenOrder = screenOrder[currentScreen] ?? -1;
+      const expectedScreenOrder = screenOrder[expectedScreen] ?? -1;
+
+      // Don't redirect if user is on a later screen than their status indicates
+      // This prevents redirecting backwards when status update is in progress
+      const isProgressingForward = currentScreenOrder > expectedScreenOrder;
+
+      // Only redirect if user is not on the expected screen and not progressing forward
       // Add a longer delay to allow status updates to propagate
-      if (!isOnExpectedScreen) {
+      if (!isOnExpectedScreen && !isProgressingForward) {
         let targetRoute = '/onboarding/basic-info';
         
         // Determine the target route based on onboarding status
@@ -107,9 +127,10 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
         targetRoute = statusRouteMap[onboardingStatus || ''] || '/onboarding/basic-info';
 
         // Add a delay to avoid interfering with active navigation and allow status updates
+        // Increased delay to prevent race conditions
         const timeoutId = setTimeout(() => {
           router.replace(targetRoute as any);
-        }, 400);
+        }, 600);
 
         return () => clearTimeout(timeoutId);
       }

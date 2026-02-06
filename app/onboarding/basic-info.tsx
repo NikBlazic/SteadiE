@@ -1,12 +1,12 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  Alert,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    Alert,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { DatabaseService } from '../../api/onboarding-data';
 import { useAuth } from '../../lib/auth-context';
@@ -137,31 +137,52 @@ export default function BasicInfoScreen() {
 
   const handleContinue = async () => {
     if (validateForm()) {
-      // Update the onboarding context with user data (age, gender)
-      updateData('user', {
-        age: parseInt(formData.age),
-        gender: formData.gender,
-      });
-
-      // Update the onboarding context with basic info (display_name, country_region)
-      updateData('basicInfo', {
-        display_name: formData.display_name.trim() || 'Anonymous',
-        country_region: formData.country_region.trim(),
-      });
-
-      // Update onboarding status before navigating
-      if (user) {
-        try {
-          await DatabaseService.updateOnboardingStatus(user.id, 'user-reason');
-          // Use replace instead of push to avoid navigation issues
-          router.replace('/onboarding/user-reason' as any);
-        } catch (error) {
-          console.error('Error updating onboarding status:', error);
-          // Still navigate even if status update fails
-          router.replace('/onboarding/user-reason' as any);
-        }
-      } else {
+      if (!user) {
+        // Update context only if no user
+        updateData('user', {
+          age: parseInt(formData.age),
+          gender: formData.gender,
+        });
+        updateData('basicInfo', {
+          display_name: formData.display_name.trim() || 'Anonymous',
+          country_region: formData.country_region.trim(),
+        });
         router.replace('/onboarding/user-reason' as any);
+        return;
+      }
+
+      try {
+        // Save data to database first
+        await Promise.all([
+          DatabaseService.saveUserData(user.id, {
+            age: parseInt(formData.age),
+            gender: formData.gender,
+            email: user.email || '',
+          }),
+          DatabaseService.saveUserBasicInfo(user.id, {
+            display_name: formData.display_name.trim() || 'Anonymous',
+            country_region: formData.country_region.trim(),
+          }),
+        ]);
+
+        // Update the onboarding context
+        updateData('user', {
+          age: parseInt(formData.age),
+          gender: formData.gender,
+        });
+        updateData('basicInfo', {
+          display_name: formData.display_name.trim() || 'Anonymous',
+          country_region: formData.country_region.trim(),
+        });
+
+        // Update onboarding status after data is saved
+        await DatabaseService.updateOnboardingStatus(user.id, 'user-reason');
+        
+        // Use replace instead of push to avoid navigation issues
+        router.replace('/onboarding/user-reason' as any);
+      } catch (error) {
+        console.error('Error saving basic info:', error);
+        Alert.alert('Error', 'Failed to save your information. Please try again.');
       }
     }
   };
