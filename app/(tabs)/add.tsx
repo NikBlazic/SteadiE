@@ -60,20 +60,22 @@ export default function AddScreen() {
         <TouchableOpacity
           className="rounded-2xl p-5 flex-row items-center justify-between"
           style={{
-            backgroundColor: '#008d72',
+            backgroundColor: '#FFFFFF',
+            borderWidth: 1,
+            borderColor: '#E5E7EB',
           }}
           onPress={() => router.push('/journaling/mood_check_in' as any)}
           activeOpacity={0.7}
         >
           <View className="flex-1 mr-4">
-            <Text className="text-white text-2xl font-bold mb-1">
+            <Text className="text-[#008d72] text-2xl font-bold mb-1">
               mood check in.
             </Text>
-            <Text className="text-white/80 text-sm">
+            <Text className="text-gray-500 text-sm">
               reflect on how you're feeling.
             </Text>
           </View>
-          <Ionicons name="heart-outline" size={28} color="#FFFFFF" />
+          <Ionicons name="heart-outline" size={28} color="#008d72" />
         </TouchableOpacity>
       </View>
     </View>

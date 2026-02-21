@@ -279,11 +279,6 @@ export default function HomeScreen() {
   };
 
   const weekDates = getWeekDates();
-  const formattedDate = today.toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
 
   return (
     <ScrollView className="flex-1 bg-white" showsVerticalScrollIndicator={false}>

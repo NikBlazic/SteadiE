@@ -51,12 +51,12 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="community"
         options={{
-          title: 'Explore',
+          title: 'Community',
           tabBarLabel: '',
           tabBarIcon: ({ color }) => (
-            <Ionicons name="compass" size={20} color={color} />
+            <Ionicons name="people" size={20} color={color} />
           ),
         }}
       />
@@ -109,11 +109,18 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="settings"
+        options={{
+          title: 'Settings',
+          href: null, // Hide from tab bar
+        }}
+      />
+      <Tabs.Screen
         name="index"
         options={{
           href: null, // Hide from tab bar
         }}
       />
-    </Tabs>
+    </Tabs> 
   );
 }
