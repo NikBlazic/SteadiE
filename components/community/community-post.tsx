@@ -11,7 +11,9 @@ export interface CommunityPostData {
   handle: string;
   initial: string;
   timeAgo: string;
+  title?: string;
   content: string;
+  hashtags?: string[];
   comments: number;
   likes: number;
   liked?: boolean;
@@ -38,6 +40,20 @@ function formatContent(content: string) {
   });
 }
 
+function formatHashtags(hashtags?: string[]) {
+  const tags = (hashtags ?? []).filter(Boolean);
+  if (tags.length === 0) return null;
+  return (
+    <View className="flex-row flex-wrap gap-2 mt-3">
+      {tags.map((t) => (
+        <View key={t} className="px-2.5 py-1 rounded-full bg-gray-100">
+          <Text className="text-[12px] text-gray-700">#{t}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 export function CommunityPost({ post, onLike, isFirst }: CommunityPostProps) {
   const handleLike = () => onLike?.(post.id);
 
@@ -50,14 +66,21 @@ export function CommunityPost({ post, onLike, isFirst }: CommunityPostProps) {
         <Text className="text-base font-bold text-white">{post.initial}</Text>
       </View>
       <View className="flex-1 min-w-0">
-        <Text className="text-[15px] font-bold text-gray-900">{post.name}</Text>
         <View className="flex-row items-center gap-1.5 mt-0.5 mb-2">
-          <Text className="text-[13px] text-gray-400">@{post.handle}</Text>
+          <Text className="text-[17px] font-bold text-gray-900">{post.name}</Text>
           <Text className="text-[13px] text-gray-400">·</Text>
-          <Text className="text-[13px] text-gray-400">{post.timeAgo}</Text>
+          <Text className="text-[15px] text-gray-400">{post.timeAgo}</Text>
         </View>
         <View className="mb-4">
-          {formatContent(post.content)}
+          {!!post.title?.trim() && (
+            <Text className="text-[15px] font-semibold text-gray-900 leading-snug">
+              {post.title.trim()}
+            </Text>
+          )}
+          <View className={post.title?.trim() ? 'mt-1' : ''}>
+            {formatContent(post.content)}
+          </View>
+          {formatHashtags(post.hashtags)}
         </View>
         <View className="flex-row items-center gap-6">
           <View className="flex-row items-center gap-2">

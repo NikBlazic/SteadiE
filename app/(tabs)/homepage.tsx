@@ -286,7 +286,7 @@ export default function HomeScreen() {
         {/* Header */}
         <View className="mb-6">
           <Text className="text-xl text-gray-500">{getGreeting()}</Text>
-          <Text className="text-5xl font-bold text-gray-800 mt-1">{displayName}</Text>
+          <Text className="text-5xl font-bold text-[#008d72] mt-1">{displayName}</Text>
         </View>
 
         {/* Week Calendar */}
