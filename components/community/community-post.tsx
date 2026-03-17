@@ -22,6 +22,7 @@ export interface CommunityPostData {
 interface CommunityPostProps {
   post: CommunityPostData;
   onLike?: (id: string) => void;
+  onComment?: (id: string) => void;
   isFirst?: boolean;
 }
 
@@ -54,8 +55,9 @@ function formatHashtags(hashtags?: string[]) {
   );
 }
 
-export function CommunityPost({ post, onLike, isFirst }: CommunityPostProps) {
+export function CommunityPost({ post, onLike, onComment, isFirst }: CommunityPostProps) {
   const handleLike = () => onLike?.(post.id);
+  const handleComment = () => onComment?.(post.id);
 
   return (
     <View className={`flex-row gap-4 pb-6 border-b border-gray-100 ${isFirst ? 'pt-0' : 'pt-5'}`}>
@@ -83,10 +85,15 @@ export function CommunityPost({ post, onLike, isFirst }: CommunityPostProps) {
           {formatHashtags(post.hashtags)}
         </View>
         <View className="flex-row items-center gap-6">
-          <View className="flex-row items-center gap-2">
+          <TouchableOpacity
+            onPress={handleComment}
+            className="flex-row items-center gap-2"
+            activeOpacity={0.7}
+            disabled={!onComment}
+          >
             <Ionicons name="chatbubble-outline" size={18} color={GREY_MUTED} />
             <Text className="text-[13px] text-gray-600">{post.comments}</Text>
-          </View>
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={handleLike}
             className="flex-row items-center gap-2"

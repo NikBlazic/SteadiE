@@ -18,7 +18,7 @@ import { useAuth } from '../../lib/auth-context';
 import { supabase } from '../../lib/supabase';
 
 const GREEN = '#008d72';
-const MAX_CONTENT_LENGTH = 750;
+const MAX_CONTENT_LENGTH = 2000;
 
 export interface NewPostData {
   title: string;

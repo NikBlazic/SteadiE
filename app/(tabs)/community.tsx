@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { CommunityPost, type CommunityPostData } from '../../components/community/community-post';
 import { NewPostModal, type NewPostData } from '../../components/community/new-post-modal';
+import { ReplyModal, type ReplyModalTarget } from '../../components/community/reply-modal';
 import { useAuth } from '../../lib/auth-context';
 import { supabase } from '../../lib/supabase';
 
@@ -75,6 +76,8 @@ export default function CommunityScreen() {
   const [posts, setPosts] = useState<CommunityPostData[]>([]);
   const [myPosts, setMyPosts] = useState<CommunityPostData[]>([]);
   const [newPostModalVisible, setNewPostModalVisible] = useState(false);
+  const [replyModalVisible, setReplyModalVisible] = useState(false);
+  const [replyTarget, setReplyTarget] = useState<ReplyModalTarget | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLike = useCallback((id: string) => {
@@ -202,6 +205,63 @@ export default function CommunityScreen() {
       setIsLoading(false);
     }
   }, [user?.id]);
+
+  const handleComment = useCallback(
+    (id: string) => {
+      const post = posts.find((p) => p.id === id) ?? myPosts.find((p) => p.id === id);
+      if (!post) return;
+      setReplyTarget({
+        postId: post.id,
+        postTitle: (post.title ?? '').trim() || 'this post',
+      });
+      setReplyModalVisible(true);
+    },
+    [posts, myPosts]
+  );
+
+  const handleReplySubmit = useCallback(
+    async (content: string, target: ReplyModalTarget) => {
+      if (!user) return;
+      const postId = Number(target.postId);
+      if (!Number.isFinite(postId)) return;
+
+      // Insert reply row
+      const { error: replyError } = await supabase.from('community_replies').insert({
+        user_id: user.id,
+        content,
+        community_post_id: postId,
+      });
+      if (replyError) {
+        console.error('Error inserting community reply:', replyError);
+        throw replyError;
+      }
+
+      // Increment replies counter on parent post
+      const current =
+        posts.find((p) => p.id === target.postId) ?? myPosts.find((p) => p.id === target.postId);
+      const currentReplies = Math.max(0, Number(current?.comments ?? 0));
+      const newReplies = currentReplies + 1;
+
+      const { error: postError } = await supabase
+        .from('community_posts')
+        .update({ replies: newReplies })
+        .eq('id', postId);
+      if (postError) {
+        console.error('Error updating replies count:', postError);
+      }
+
+      // Optimistic local update so UI feels instant
+      setPosts((prev) =>
+        prev.map((p) => (p.id === target.postId ? { ...p, comments: newReplies } : p))
+      );
+      setMyPosts((prev) =>
+        prev.map((p) => (p.id === target.postId ? { ...p, comments: newReplies } : p))
+      );
+      // Refresh so the modal "Comments" tab shows the new reply immediately
+      await loadPosts();
+    },
+    [user, posts, myPosts, loadPosts]
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -342,6 +402,7 @@ export default function CommunityScreen() {
                   key={post.id}
                   post={post}
                   onLike={handleLike}
+                  onComment={handleComment}
                   isFirst={index === 0}
                 />
               ))
@@ -376,6 +437,7 @@ export default function CommunityScreen() {
                     key={post.id}
                     post={post}
                     onLike={handleLike}
+                    onComment={handleComment}
                     isFirst={index === 0}
                   />
                 ))
@@ -389,6 +451,16 @@ export default function CommunityScreen() {
         visible={newPostModalVisible}
         onClose={() => setNewPostModalVisible(false)}
         onSubmit={handleNewPost}
+      />
+
+      <ReplyModal
+        visible={replyModalVisible}
+        target={replyTarget}
+        onClose={() => {
+          setReplyModalVisible(false);
+          setReplyTarget(null);
+        }}
+        onSubmit={handleReplySubmit}
       />
     </View>
   );
