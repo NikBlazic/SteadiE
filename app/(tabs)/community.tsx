@@ -317,7 +317,7 @@ export default function CommunityScreen() {
         {/* Header */}
         <View className="px-6 pt-16 pb-4">
           <Text
-            className="text-[26px] font-bold tracking-tight"
+            className="text-3xl font-bold"
             style={{ color: GREEN }}
           >
             community.

@@ -7,10 +7,12 @@ export default function AddScreen() {
   const router = useRouter();
 
   return (
-    <View className="flex-1 bg-white px-6 pt-12">
-      <Text className="text-3xl font-bold text-[#008d72] mb-8 pt-8">
-        journal.
-      </Text>
+    <View className="flex-1 bg-white px-6">
+      <View className="pt-16 pb-8">
+        <Text className="text-3xl font-bold text-[#008d72]">
+          journal.
+        </Text>
+      </View>
       <View className=" justify-center">
         {/* Empty Page Button */}
         <TouchableOpacity

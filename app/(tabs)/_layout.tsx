@@ -109,16 +109,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="settings"
-        options={{
-          title: 'Settings',
-          href: null, // Hide from tab bar
-        }}
-      />
-      <Tabs.Screen
         name="index"
         options={{
-          href: null, // Hide from tab bar
+          href: null,
         }}
       />
     </Tabs> 
