@@ -50,7 +50,7 @@ export default function ViewEntryScreen() {
       } else if (type === 'ideas') {
         const { data, error: fetchError } = await supabase
           .from('journal_idea')
-          .select('content')
+          .select('content, ideas(content)')
           .eq('id', Number(numericId))
           .eq('user_id', user.id)
           .single();
@@ -61,7 +61,9 @@ export default function ViewEntryScreen() {
           setContent('');
           return;
         }
-        setTitle('project brainstorm.');
+        const relatedIdea = (data as any).ideas;
+        const linkedIdeaContent = (relatedIdea?.[0]?.content || relatedIdea?.content || '').trim().replace(/[;]+$/, '');
+        setTitle(linkedIdeaContent || 'project brainstorm.');
         setContent(data.content?.trim() || '');
       } else {
         const { data, error: fetchError } = await supabase

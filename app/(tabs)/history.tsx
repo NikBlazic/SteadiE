@@ -94,7 +94,7 @@ export default function HistoryScreen() {
           .order('created_at', { ascending: false }),
         supabase
           .from('journal_idea')
-          .select('id, content, created_at')
+          .select('id, content, created_at, ideas(content)')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false }),
         supabase
@@ -113,14 +113,18 @@ export default function HistoryScreen() {
         created_at: row.created_at,
       }));
 
-      const ideaEntries: JournalEntry[] = (ideasRes.data || []).map((row) => ({
-        id: `idea-${row.id}`,
-        type: 'ideas',
-        title: 'project brainstorm.',
-        excerpt: (row.content || '').trim().slice(0, 60) + ((row.content?.length || 0) > 60 ? '...' : ''),
-        date: formatDate(row.created_at),
-        created_at: row.created_at,
-      }));
+      const ideaEntries: JournalEntry[] = (ideasRes.data || []).map((row) => {
+        const relatedIdea = (row as any).ideas;
+        const ideaTitle = (relatedIdea?.[0]?.content || relatedIdea?.content || '').trim().replace(/[;]+$/, '');
+        return {
+          id: `idea-${row.id}`,
+          type: 'ideas',
+          title: ideaTitle || 'project brainstorm.',
+          excerpt: (row.content || '').trim().slice(0, 60) + ((row.content?.length || 0) > 60 ? '...' : ''),
+          date: formatDate(row.created_at),
+          created_at: row.created_at,
+        };
+      });
 
       const moodEntries: JournalEntry[] = (moodRes.data || []).map((row) => ({
         id: `mood-${row.id}`,
@@ -219,7 +223,7 @@ export default function HistoryScreen() {
                 <View className="flex-1 min-w-0">
                   <Text className="text-base font-semibold" style={{ color: GREEN }} numberOfLines={1}>
                     {entry.title}
-                    {!entry.title.endsWith('.') ? '.' : ''}
+                    {entry.type === 'ideas' ? '' : (!entry.title.endsWith('.') ? '.' : '')}
                   </Text>
                   <Text className="text-sm text-gray-500 mt-0.5" numberOfLines={2}>
                     {entry.excerpt || 'No content'}
