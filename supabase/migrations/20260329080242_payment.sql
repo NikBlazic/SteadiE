@@ -1,0 +1,1 @@
+alter table users add column if not exists subscription_onboarding_completed boolean not null default false;

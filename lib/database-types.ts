@@ -5,6 +5,8 @@ export interface User {
   age: number;
   gender: string | null;
   onboarding_status: 'basic-info' | 'user-reason' | 'addiction-info' | 'mental-health-info' | 'motivation' | 'lifestyle-factors' | 'support-preferences' | 'emergency-contact' | 'confirmation' | 'complete' | '';
+  subscription_onboarding_completed?: boolean;
+  trial_started_at?: string | null;
   updated_at: string;
 }
 

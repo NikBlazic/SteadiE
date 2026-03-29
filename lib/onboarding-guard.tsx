@@ -11,6 +11,7 @@ interface OnboardingGuardProps {
 export function OnboardingGuard({ children }: OnboardingGuardProps) {
   const { user, loading: authLoading } = useAuth();
   const [onboardingStatus, setOnboardingStatus] = useState<'basic-info' | 'user-reason' | 'addiction-info' | 'mental-health-info' | 'motivation' | 'lifestyle-factors' | 'support-preferences' | 'emergency-contact' | 'confirmation' | 'complete' | '' | null>(null);
+  const [subscriptionOnboardingCompleted, setSubscriptionOnboardingCompleted] = useState<boolean | null>(null);
   const [checkingOnboarding, setCheckingOnboarding] = useState(false);
   const router = useRouter();
   const segments = useSegments();
@@ -19,17 +20,20 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
     const checkOnboardingStatus = async () => {
       if (!user) {
         setOnboardingStatus(null);
+        setSubscriptionOnboardingCompleted(null);
         return;
       }
 
       setCheckingOnboarding(true);
       try {
-        const status = await DatabaseService.getOnboardingStatus(user.id);
-        setOnboardingStatus(status);
+        const flow = await DatabaseService.getUserFlowState(user.id);
+        setOnboardingStatus(flow.onboardingStatus);
+        setSubscriptionOnboardingCompleted(flow.subscriptionOnboardingCompleted);
       } catch (error) {
         console.error('Error checking onboarding status:', error);
         // Default to empty string (start from beginning) if there's an error
         setOnboardingStatus('');
+        setSubscriptionOnboardingCompleted(false);
       } finally {
         setCheckingOnboarding(false);
       }
@@ -48,8 +52,9 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
       // Re-check status after a short delay to allow database updates to propagate
       const timeoutId = setTimeout(async () => {
         try {
-          const status = await DatabaseService.getOnboardingStatus(user.id);
-          setOnboardingStatus(status);
+          const flow = await DatabaseService.getUserFlowState(user.id);
+          setOnboardingStatus(flow.onboardingStatus);
+          setSubscriptionOnboardingCompleted(flow.subscriptionOnboardingCompleted);
         } catch (error) {
           console.error('Error re-checking onboarding status:', error);
         }
@@ -62,20 +67,58 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
   }, [user, segments, checkingOnboarding]);
 
   useEffect(() => {
-    if (authLoading || checkingOnboarding || onboardingStatus === null) {
+    if (authLoading || checkingOnboarding || onboardingStatus === null || subscriptionOnboardingCompleted === null) {
       return;
     }
 
     const inOnboardingFlow = segments[0] === 'onboarding';
     const inAuthFlow = segments[0] === '(tabs)' && !user;
     const currentScreen = segments[1] || '';
+    const onSubscribeScreen = segments[0] === 'subscribe';
 
-    // If user has completed onboarding, redirect to main app if in onboarding flow
+    // If user has completed onboarding, subscription screen comes before home
     if (onboardingStatus === 'complete') {
-      if (inOnboardingFlow) {
-        router.replace('/(tabs)/homepage');
-      }
-      return;
+      let cancelled = false;
+
+      const runCompleteBranch = async () => {
+        if (!user) {
+          return;
+        }
+        if (!subscriptionOnboardingCompleted) {
+          if (onSubscribeScreen) {
+            return;
+          }
+          // React state is often stale right after the subscribe screen updates the DB — confirm from server
+          try {
+            const flow = await DatabaseService.getUserFlowState(user.id);
+            if (cancelled) {
+              return;
+            }
+            setOnboardingStatus(flow.onboardingStatus);
+            setSubscriptionOnboardingCompleted(flow.subscriptionOnboardingCompleted);
+            if (flow.subscriptionOnboardingCompleted) {
+              return;
+            }
+          } catch (error) {
+            console.error('Error confirming subscription onboarding:', error);
+            if (cancelled) {
+              return;
+            }
+          }
+          if (!cancelled) {
+            router.replace('/subscribe');
+          }
+          return;
+        }
+        if (inOnboardingFlow && !cancelled) {
+          router.replace('/(tabs)/homepage');
+        }
+      };
+
+      void runCompleteBranch();
+      return () => {
+        cancelled = true;
+      };
     }
 
     // If user is authenticated but hasn't completed onboarding, redirect to the correct stage
@@ -140,7 +183,7 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
     if (!user && inOnboardingFlow) {
       // Could redirect to login if needed
     }
-  }, [user, onboardingStatus, authLoading, checkingOnboarding, segments, router]);
+  }, [user, onboardingStatus, subscriptionOnboardingCompleted, authLoading, checkingOnboarding, segments, router]);
 
   if (authLoading || checkingOnboarding) {
     return (

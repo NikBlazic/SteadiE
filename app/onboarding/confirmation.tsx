@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -260,18 +261,7 @@ export default function ConfirmationScreen() {
       // Mark onboarding as complete
       await DatabaseService.markOnboardingComplete(user.id);
 
-      Alert.alert(
-        'Success!',
-        'Your information has been saved. Onboarding completed!',
-        [
-          {
-            text: 'Continue to App',
-            onPress: () => {
-              router.replace('/(tabs)');
-            },
-          },
-        ]
-      );
+      router.replace('/subscribe');
     } catch (error: any) {
       console.error('Error saving onboarding data:', error);
       const errorMessage = error.message || error.error?.message || 'Failed to save your information. Please try again.';
@@ -336,11 +326,11 @@ export default function ConfirmationScreen() {
           </Text>
         </View>
 
-        <View className="bg-gray-50 rounded-lg p-6 mb-8">
+        <View className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
           <View className="space-y-4">
             {/* Basic Info */}
             <View className="mb-4">
-              <Text className="text-lg font-bold text-gray-900 mb-3">Basic Information</Text>
+              <Text className="text-lg font-bold text-[#008d72] mb-3">Basic Information</Text>
               <View className="space-y-2">
                 <View className="flex-row justify-between items-center py-2 border-b border-gray-200">
                   <Text className="text-base font-medium text-gray-600">Username</Text>
@@ -367,17 +357,17 @@ export default function ConfirmationScreen() {
             {data.userReason?.main_reason && data.userReason.main_reason.length > 0 && (
               <>
                 <View className="my-4 px-4">
-                  <View className="h-[2px] bg-black" />
+                  <View className="h-[2px] rounded-full bg-[#008d72]/40" />
                 </View>
                 <View className="mb-4">
-                  <Text className="text-lg font-bold text-gray-900 mb-3">Reasons</Text>
+                  <Text className="text-lg font-bold text-[#008d72] mb-3">Reasons</Text>
                   <View className="space-y-2">
                     {data.userReason.main_reason.map((reason, index) => (
                       <View key={index} className="flex-row justify-between items-center py-2 border-b border-gray-200">
                         <Text className="text-base text-gray-900">
                           {getReasonLabel(reason)}
                         </Text>
-                        <Text className="text-base text-[#000000] font-bold">✓</Text>
+                        <Ionicons name="checkmark-circle" size={22} color="#008d72" />
                       </View>
                     ))}
                   </View>
@@ -389,10 +379,10 @@ export default function ConfirmationScreen() {
             {data.addictionInfo?.addiction_type && (
               <>
                 <View className="my-4 px-4">
-                  <View className="h-[2px] bg-black" />
+                  <View className="h-[2px] rounded-full bg-[#008d72]/40" />
                 </View>
                 <View className="mb-4">
-                <Text className="text-lg font-bold text-gray-900 mb-3">Addiction Information</Text>
+                <Text className="text-lg font-bold text-[#008d72] mb-3">Addiction Information</Text>
                 <View className="space-y-2">
                   <View className="flex-row justify-between items-center py-2 border-b border-gray-200">
                     <Text className="text-base font-medium text-gray-600">Type</Text>
@@ -433,10 +423,10 @@ export default function ConfirmationScreen() {
             {data.mentalHealthInfo && (
               <>
                 <View className="my-4 px-4">
-                  <View className="h-[2px] bg-black" />
+                  <View className="h-[2px] rounded-full bg-[#008d72]/40" />
                 </View>
                 <View className="mb-4">
-                <Text className="text-lg font-bold text-gray-900 mb-3">Mental Health</Text>
+                <Text className="text-lg font-bold text-[#008d72] mb-3">Mental Health</Text>
                 <View className="space-y-2">
                   {data.mentalHealthInfo.recent_feeling && (
                     <View className="flex-row justify-between items-center py-2 border-b border-gray-200">
@@ -463,10 +453,10 @@ export default function ConfirmationScreen() {
             {data.motivation?.readiness && (
               <>
                 <View className="my-4 px-4">
-                  <View className="h-[2px] bg-black" />
+                  <View className="h-[2px] rounded-full bg-[#008d72]/40" />
                 </View>
                 <View className="mb-4">
-                  <Text className="text-lg font-bold text-gray-900 mb-3">Motivation</Text>
+                  <Text className="text-lg font-bold text-[#008d72] mb-3">Motivation</Text>
                   <View className="flex-row justify-between items-center py-2">
                     <Text className="text-base font-medium text-gray-600">Readiness</Text>
                     <Text className="text-base text-gray-900">
@@ -481,10 +471,10 @@ export default function ConfirmationScreen() {
             {data.lifestyleFactors && (
               <>
                 <View className="my-4 px-4">
-                  <View className="h-[2px] bg-black" />
+                  <View className="h-[2px] rounded-full bg-[#008d72]/40" />
                 </View>
                 <View className="mb-4">
-                  <Text className="text-lg font-bold text-gray-900 mb-3">Lifestyle Factors</Text>
+                  <Text className="text-lg font-bold text-[#008d72] mb-3">Lifestyle Factors</Text>
                 <View className="space-y-2">
                   {data.lifestyleFactors.sleep_quality && (
                     <View className="flex-row justify-between items-center py-2 border-b border-gray-200">
@@ -527,10 +517,10 @@ export default function ConfirmationScreen() {
             {data.supportPreferences && (
               <>
                 <View className="my-4 px-4">
-                  <View className="h-[2px] bg-black" />
+                  <View className="h-[2px] rounded-full bg-[#008d72]/40" />
                 </View>
                 <View className="mb-4">
-                <Text className="text-lg font-bold text-gray-900 mb-3">Support Preferences</Text>
+                <Text className="text-lg font-bold text-[#008d72] mb-3">Support Preferences</Text>
                 <View className="space-y-2">
                   {data.supportPreferences.support_type && data.supportPreferences.support_type.length > 0 && (
                     <View className="space-y-2">
@@ -540,7 +530,7 @@ export default function ConfirmationScreen() {
                           <Text className="text-base text-gray-900">
                             {formatSupportType(type)}
                           </Text>
-                          <Text className="text-base text-[#000000] font-bold">✓</Text>
+                          <Ionicons name="checkmark-circle" size={22} color="#008d72" />
                         </View>
                       ))}
                     </View>
@@ -562,10 +552,10 @@ export default function ConfirmationScreen() {
             {data.emergencyContact?.contact_name && (
               <>
                 <View className="my-4 px-4">
-                  <View className="h-[2px] bg-black" />
+                  <View className="h-[2px] rounded-full bg-[#008d72]/40" />
                 </View>
                 <View className="mb-4">
-                <Text className="text-lg font-bold text-gray-900 mb-3">Emergency Contact</Text>
+                <Text className="text-lg font-bold text-[#008d72] mb-3">Emergency Contact</Text>
                 <View className="space-y-2">
                   <View className="flex-row justify-between items-center py-2 border-b border-gray-200">
                     <Text className="text-base font-medium text-gray-600">Name</Text>

@@ -61,6 +61,86 @@ export class DatabaseService {
     }
   }
 
+  /** Onboarding stage plus whether the post-onboarding subscription screen was finished. */
+  static async getUserFlowState(userId: string): Promise<{
+    onboardingStatus:
+      | 'basic-info'
+      | 'user-reason'
+      | 'addiction-info'
+      | 'mental-health-info'
+      | 'motivation'
+      | 'lifestyle-factors'
+      | 'support-preferences'
+      | 'emergency-contact'
+      | 'confirmation'
+      | 'complete'
+      | '';
+    subscriptionOnboardingCompleted: boolean;
+  }> {
+    const { data, error } = await supabase
+      .from('users')
+      .select('onboarding_status, subscription_onboarding_completed')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return { onboardingStatus: '', subscriptionOnboardingCompleted: false };
+      }
+      throw error;
+    }
+
+    const status = data?.onboarding_status || '';
+    const validStatuses = [
+      'complete',
+      'basic-info',
+      'user-reason',
+      'addiction-info',
+      'mental-health-info',
+      'motivation',
+      'lifestyle-factors',
+      'support-preferences',
+      'emergency-contact',
+      'confirmation',
+    ];
+    let onboardingStatus: (typeof validStatuses)[number] | '' = '';
+    if (validStatuses.includes(status)) {
+      onboardingStatus = status as (typeof validStatuses)[number];
+    }
+
+    return {
+      onboardingStatus,
+      subscriptionOnboardingCompleted: Boolean(data?.subscription_onboarding_completed),
+    };
+  }
+
+  static async markSubscriptionOnboardingComplete(userId: string): Promise<void> {
+    const { error } = await supabase
+      .from('users')
+      .update({ subscription_onboarding_completed: true })
+      .eq('id', userId);
+
+    if (error) {
+      throw error;
+    }
+  }
+
+  /** Marks paywall step done and records the start of the 14-day cardless free trial. */
+  static async startFreeTrialAndCompleteSubscriptionOnboarding(userId: string): Promise<void> {
+    const startedAt = new Date().toISOString();
+    const { error } = await supabase
+      .from('users')
+      .update({
+        subscription_onboarding_completed: true,
+        trial_started_at: startedAt,
+      })
+      .eq('id', userId);
+
+    if (error) {
+      throw error;
+    }
+  }
+
   // Get user basic info from database
   static async getUserBasicInfo(userId: string) {
     const { data, error } = await supabase
